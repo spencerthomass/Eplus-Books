@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # 1. Database
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: securepassword123
+      POSTGRES_DB: emissions_db
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+
+  # 2. Backend (Builds from your ./backend folder)
+  backend:
+    build: ./backend
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://admin:securepassword123@db/emissions_db
+    depends_on:
+      - db
+
+  # 3. Frontend (Builds from your ./frontend folder)
+  frontend:
+    build: ./frontend
+    restart: always
+    ports:
+      - "8501:8501" # Web Interface
+    environment:
+      API_URL: http://backend:8000
+    depends_on:
+      - backend
